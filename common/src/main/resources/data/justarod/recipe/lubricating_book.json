@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "BEB",
+    "BBB"
+  ],
+  "key": {
+    "B": "minecraft:milk_bucket",
+    "E": "minecraft:book"
+  },
+  "result": {
+    "id": "justarod:lubricating_book",
+    "count": 1
+  }
+}

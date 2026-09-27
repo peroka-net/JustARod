@@ -1,0 +1,21 @@
+{
+  "man": {
+    "category": "voice",
+    "sounds": [
+      {
+        "name": "justarod:man",
+        "stream": true
+      }
+    ]
+  },
+  "slime_swallow": {
+    "category": "neutral",
+    "subtitle": "subtitles.justarod.slime_swallow",
+    "sounds": [
+      {
+        "name": "justarod:slime_swallow",
+        "stream": false
+      }
+    ]
+  }
+}

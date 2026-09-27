@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "E": "minecraft:emerald",
+    "R": "minecraft:redstone",
+    "L": "minecraft:lightning_rod"
+  },
+  "pattern": [
+    " L ",
+    "IEI",
+    "IRI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "justarod:remote_control"
+  }
+}

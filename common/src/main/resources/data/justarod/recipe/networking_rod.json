@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " R ",
+    "RCR",
+    " R "
+  ],
+  "key": {
+    "C": "justarod:redstone_rod",
+    "R": "minecraft:redstone"
+  },
+  "result": {
+    "id": "justarod:networking_rod",
+    "count": 1
+  }
+}

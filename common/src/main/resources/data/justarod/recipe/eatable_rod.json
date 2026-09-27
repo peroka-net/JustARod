@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    " R "
+  ],
+  "key": {
+    "C": "minecraft:carrot",
+    "R": "minecraft:chorus_fruit"
+  },
+  "result": {
+    "id": "justarod:eatable_rod",
+    "count": 1
+  }
+}

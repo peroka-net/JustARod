@@ -1,136 +1,115 @@
 plugins {
-    id 'maven-publish'
-    id "fabric-loom" version "1.11-SNAPSHOT"
-    id 'org.jetbrains.kotlin.jvm'
+    // Loom 1.17 原生支持 26.x 去混淆版本：productionNamespace 自动为 official、
+    // 支持 classTweaker 格式的依赖 AW，不再需要 empty-mappings / noIntermediateMappings 等 workaround。
+    id 'dev.architectury.loom' version '1.17.491' apply false
+    // 26.x 为去混淆 Minecraft：Forge/NeoForge 需改用 loom-no-remap 变体（arch-loom 提示）
+    id 'dev.architectury.loom-no-remap' version '1.17.491' apply false
+    id 'architectury-plugin' version '3.5.168'
+    id 'com.gradleup.shadow' version '9.2.2' apply false
+    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}" apply false
 }
 
-version = project.mod_version
-group = project.maven_group
-
-base {
-    archivesName = project.archives_base_name
+architectury {
+    minecraft = project.minecraft_version
 }
 
-repositories {
-    mavenCentral()
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-    maven {
-        name = "Modrinth"
-        url = "https://api.modrinth.com/maven"
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
+}
+
+subprojects {
+    // 所有子项目都是 Architectury/Loom 项目
+    apply plugin: project.name == 'neoforge' ? 'dev.architectury.loom-no-remap' : 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'maven-publish'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+
+    base {
+        archivesName = "${rootProject.archives_name}-${project.name}"
     }
 
-    maven {
-        name = 'GeckoLib'
-        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroup("software.bernie.geckolib")
-        }
-    }
-
-    maven { url = 'https://oss.sonatype.org/content/groups/public/' }
-}
-
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    // kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
-    // lombok
-    implementation "org.projectlombok:lombok:1.18.30"
-
-    modImplementation "maven.modrinth:tonekomod:${project.toneko_version}"
-    modImplementation "maven.modrinth:ctlibmod:0.1.13"
-
-    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
-
-    modCompileOnly "me.lucko:fabric-permissions-api:0.3.1"
-
-    include modApi('teamreborn:energy:4.1.0') {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
-
-}
-
-loom {
-    accessWidenerPath = file("src/main/resources/justarod.accessWideners.accessWidener")
-}
-
-fabricApi {
-    configureDataGeneration() {
-        client = true
-    }
-}
-
-processResources {
-    inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
-    inputs.property "loader_version", project.loader_version
-    filteringCharset "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version,
-                "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
-    }
-}
-
-def targetJavaVersion = 21
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    it.options.encoding = "UTF-8"
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        it.options.release.set(targetJavaVersion)
-    }
-}
-
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-}
-
-// configure the maven publication
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
-            from components.java
-        }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
     repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
+        mavenCentral()
+        maven {
+            name = "Modrinth"
+            url = "https://api.modrinth.com/maven"
+        }
+        maven {
+            name = "TerraformersMC"
+            url = "https://maven.terraformersmc.com/"
+        }
+        maven {
+            name = "KosmX"
+            url = "https://maven.kosmx.dev/"
+        }
+        maven {
+            name = 'GeckoLib'
+            url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+            content {
+                includeGroup("software.bernie.geckolib")
+                includeGroup("com.geckolib")
+            }
+        }
+        maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
+        maven { url 'https://jitpack.io' }
+        flatDir {
+            dirs 'libs'
+        }
     }
-}
-kotlin {
-    jvmToolchain(21)
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        if (project.name != 'neoforge') {
+            // 26.x 去混淆后不需要真正的 mappings；但 arch-loom 仍校验 mappings configuration 必须有依赖，
+            // 故保留本地空 Tiny jar（仅 header "tiny\t2\t0\tofficial\tintermediary\tnamed"）。
+            mappings files("$rootProject.rootDir/libs/empty-mappings.jar")
+            modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+        }
+        // neoforge 侧的 mappings/Fabric API 由 neoforge/build.gradle 提供
+
+        compileOnly("org.projectlombok:lombok:1.18.46")
+        annotationProcessor("org.projectlombok:lombok:1.18.46")
+    }
+
+    java {
+        withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
+    }
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = "UTF-8"
+        it.options.release = 25
+        // JDK 23+ 默认关闭隐式注解处理；Gradle 9 + JDK 25 的 toolchain worker 会过滤
+        // `-proc`/`-processor`，且编译在 Gradle 进程内执行时 Lombok 无法修改 javac AST。
+        // 因此显式 fork 到当前 Java 25 的真实 javac 进程，Lombok 才会生效。
+        it.options.fork = true
+        it.options.forkOptions.executable = "${System.getProperty('java.home')}/bin/javac"
+        it.options.compilerArgumentProviders.add(new org.gradle.process.CommandLineArgumentProvider() {
+            @Override
+            List<String> asArguments() {
+                return ['-proc:full', '-processor', 'lombok.launch.AnnotationProcessorHider$AnnotationProcessor']
+            }
+        })
+    }
+
+    kotlin {
+        jvmToolchain(25)
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+    }
 }

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "justarod",
+  "version": "${version}",
+  "name": "JustARod",
+  "description": "meow",
+  "authors": [
+    "CrystalNeko"
+  ],
+  "contributors": [
+    "IgnoreLicensesCN",
+    "cleep5564",
+    "LingyiBit0"
+  ],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/justarod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "org.cneko.justarod.fabric.JRFabricClient"
+    ],
+    "main": [
+      "org.cneko.justarod.fabric.JRFabric"
+    ],
+    "fabric-datagen": [
+      "org.cneko.justarod.datagen.JRDataGen"
+    ],
+    "modmenu": [
+      "org.cneko.justarod.fabric.JRModMenu"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.4",
+    "fabric-api": "*",
+    "minecraft": ">=${minecraft_version}",
+    "fabric-language-kotlin": "*",
+    "java": ">=25",
+    "geckolib": "*",
+    "toneko": ">=2.0.0"
+  },
+  "suggests": {
+    "patchouli": "*",
+    "modmenu": "*"
+  },
+  "mixins": [
+    "justarod.mixins.json"
+  ],
+  "accessWidener" : "justarod.accessWideners.accessWidener",
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/world/entity/player/Player": [
+        "org/cneko/justarod/entity/Powerable",
+        "org/cneko/justarod/entity/Pregnant",
+        "org/cneko/justarod/entity/BDSMable"
+      ],
+      "org/cneko/toneko/common/mod/entities/RavennEntity": ["org/cneko/justarod/entity/Pregnant"],
+      "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
+      "net/minecraft/world/entity/Entity": ["org/cneko/justarod/entity/Fallible"],
+      "net/minecraft/world/entity/LivingEntity": ["org/cneko/justarod/entity/Insertable"]
+    }
+  }
+}

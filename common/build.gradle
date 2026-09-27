@@ -1,0 +1,39 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+dependencies {
+    // Fabric Loader 仅用于编译期注解（@Environment 等），不要在公共代码中使用它的其他类
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+
+    // GeckoLib 5.x for 26.1.2 moved to com.geckolib
+    modImplementation "com.geckolib:geckolib-common-26.1.2:$rootProject.geckolib_version"
+
+    // 前置：toNeko（使用本地 26.1.2 构建产物）
+    compileOnly files("$rootProject.rootDir/libs/toneko-common-2.0.0.jar")
+
+    // Kotlin runtime pieces used by the module
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlin_version"
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/justarod.accessWideners.accessWidener")
+}
+
+sourceSets.main.resources.srcDir 'src/main/generated'
+
+// ===== Mixin 注入目标离线校验 =====
+// 背景：对 Slime 注入 Mob 声明的 mobInteract，编译能过但运行期类加载直接崩
+// （InvalidInjectionException: could not find any targets，因为 Mixin 默认不搜父类）。
+// 这个任务在编译产物上反射式校验每个 @Inject 的目标方法是否存在，提前拦住这类崩溃。
+tasks.register('verifyMixins', JavaExec) {
+    group = 'verification'
+    description = '校验所有 @Inject 的目标方法在目标类上真实存在'
+    dependsOn 'classes'
+    // 用 main 的运行时类路径：里面有 Minecraft，反射兜底才查得到原版类
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.cneko.justarod.debug.MixinTargetVerifier'
+    // 把 main 的所有输出目录都传进去（Java + Kotlin 是两个目录）
+    args = sourceSets.main.output.classesDirs.files.collect { it.absolutePath } +
+            [file('src/main/resources/justarod.mixins.json').absolutePath]
+}

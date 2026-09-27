@@ -1,0 +1,24 @@
+package org.cneko.justarod.packet;
+
+import static org.cneko.justarod.Justarod.MODID;
+
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+
+// 哼哼
+public record FrictionPayload(String message) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<FrictionPayload> ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MODID, "friction"));
+    public static final StreamCodec<RegistryFriendlyByteBuf,FrictionPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8,
+            FrictionPayload::message,
+            FrictionPayload::new
+    );
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return ID;
+    }
+}

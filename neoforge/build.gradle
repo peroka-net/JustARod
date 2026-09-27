@@ -1,0 +1,79 @@
+plugins {
+    id 'com.gradleup.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
+    }
+    maven {
+        url "https://maven.su5ed.dev/releases"
+    }
+    maven {
+        name = 'KotlinForForge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+    }
+    maven { url = uri("https://api.modrinth.com/maven") }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
+
+    // loom-no-remap 无 mod* 配置（全部官方映射，无需重映射），mod 依赖走普通 implementation
+    // Forgified Fabric API：在 NeoForge 侧提供 net.fabricmc.* Fabric API 类
+    implementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:$rootProject.forgified_fabric_api_version"
+    implementation "com.geckolib:geckolib-neoforge-26.1.2:$rootProject.geckolib_version"
+
+    // toNeko 26.1.2 本地构建产物：仅用于开发运行时；正式发布时作为前置由玩家自行安装
+    runtimeOnly files("$rootProject.rootDir/libs/toneko-neoforge-2.0.0.jar")
+    // Kotlin 运行时由 Kotlin for Forge 提供，不打包进 mod
+    runtimeOnly files("$rootProject.rootDir/libs/kotlinforforge-neoforge-5.12.0.jar")
+
+    // Kotlin stdlib 仅用于编译期；运行时由 Kotlin for Forge 提供，不打包进 mod
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlin_version"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filteringCharset 'UTF-8'
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand 'version': project.version
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    // loom-no-remap：无 remapJar 任务；shadowJar 即发布主产物
+    archiveClassifier = ''
+}
+
+tasks.named('jar') {
+    // 模块自身的裸 jar 保留为 thin 分类，避免与 shadowJar 主产物冲突
+    archiveClassifier = 'thin'
+}

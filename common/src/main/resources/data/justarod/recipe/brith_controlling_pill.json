@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "A": "minecraft:gunpowder",
+    "B": "justarod:golden_leaves",
+    "C": "minecraft:blaze_powder",
+    "D": "minecraft:redstone",
+    "E": "minecraft:lilac"
+  },
+  "pattern": [
+    "BAB",
+    "DED",
+    "BCB"
+  ],
+  "result": {
+    "count": 2,
+    "id": "justarod:brith_controlling_pill"
+  }
+}

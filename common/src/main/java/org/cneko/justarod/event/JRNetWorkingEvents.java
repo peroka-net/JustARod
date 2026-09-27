@@ -1,0 +1,134 @@
+package org.cneko.justarod.event;
+
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import org.cneko.justarod.client.screen.MateScreen;
+import org.cneko.justarod.effect.JREffects;
+import org.cneko.justarod.entity.JREntities;
+import org.cneko.justarod.entity.Pregnant;
+import org.cneko.justarod.mixin.NekoEntityMixin;
+import org.cneko.justarod.packet.FullHeatPayload;
+import org.cneko.justarod.packet.MatePayload;
+import org.cneko.justarod.packet.PassiveMatingPayload;
+import org.cneko.justarod.packet.RavennPassiveMatingPayload;
+import org.cneko.toneko.common.api.TickTasks;
+import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoEntity;
+import org.cneko.toneko.common.mod.entities.RavennEntity;
+import org.cneko.toneko.common.mod.entities.ToNekoEntities;
+import org.cneko.toneko.common.mod.events.ToNekoNetworkEvents;
+import org.cneko.toneko.common.mod.util.EntityUtil;
+import org.cneko.toneko.common.mod.util.TickTaskQueue;
+
+import java.util.UUID;
+
+public class JRNetWorkingEvents {
+    public static void init(){
+        ServerPlayNetworking.registerGlobalReceiver(FullHeatPayload.ID, (payload,context) -> {
+            // 消耗体力
+            Player player = context.player();
+            ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-80);
+        });
+        ServerPlayNetworking.registerGlobalReceiver(MatePayload.ID,((payload, context) -> {
+            ServerPlayer player = context.player();
+            // 计算概率（与量和时间成正比）
+            double probability = payload.amount() * payload.time() / 150;
+            if (probability >= 1 || Math.random() < probability) {
+                // 添加状态效果
+                player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, payload.time()*20));
+                // 减少体力
+                ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-payload.amount()*30);
+                String uuid = payload.nekoUuid();
+                // 如果uuid合法
+                try {
+                    UUID nekoUuid = UUID.fromString(uuid);
+                    NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,32);
+                    if (neko != null){
+                        neko.tryMating((ServerLevel) player.level(),neko);
+                    }
+                }catch (Exception ignored){}
+            }else {
+                ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-payload.amount()*5);
+                player.sendSystemMessage(Component.nullToEmpty("§c配种失败！"));
+            }
+        }));
+
+        ServerPlayNetworking.registerGlobalReceiver(PassiveMatingPayload.ID,((payload, context) -> {
+            ServerPlayer player = context.player();
+            try {
+                UUID nekoUuid = UUID.fromString(payload.uuid());
+                NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,32);
+                if (neko != null){
+                    var queue = new TickTaskQueue();
+                    player.sendSystemMessage(Component.nullToEmpty("§a已发送请求"));
+                    if (!neko.canMate((INeko) player)){
+                        queue.addTask(20,()->{
+                            player.sendSystemMessage(Component.nullToEmpty("§c对方拒绝了你的请求！"));
+                        });
+                    }else {
+                        queue.addTask(20, () -> {
+                            player.sendSystemMessage(Component.nullToEmpty("§a对方已接受请求，正在生成参数"));
+                            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 1000,4));
+                        });
+                        // TODO 射我里面
+                        queue.addTask(40, () -> {
+                            // 1.0~5.0
+                            double probability = player.getRandom().nextDouble() * 5;
+                            // 减少玩家的能量
+                            ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-probability*25);
+                            // 大于3.0直接成功，小于3.0则概率成功
+                            if (probability >= 3 || player.getRandom().nextBoolean()) {
+                                player.sendSystemMessage(Component.nullToEmpty("§a配种成功！消耗参数量："+probability+"亿"));
+                                neko.breed((ServerLevel) player.level(), (INeko) player);
+                            }else {
+                                player.sendSystemMessage(Component.nullToEmpty("§c配种失败！消耗参数量："+probability+"亿"));
+                            }
+                        });
+                    }
+                    TickTasks.add(queue);
+                }
+            }catch (Exception ignored){}
+        }));
+
+        ServerPlayNetworking.registerGlobalReceiver(RavennPassiveMatingPayload.ID,(payload,context)->{
+            ServerPlayer player = context.player();
+            try {
+                UUID nekoUuid = UUID.fromString(payload.uuid());
+                NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,16);
+                if (neko instanceof RavennEntity ravenn){
+                    Pregnant preRavenn = (Pregnant) ravenn;
+                    if (((org.cneko.justarod.entity.Pregnant) preRavenn).canPregnant() && ((org.cneko.justarod.entity.Pregnant) player).canPregnant()){
+                        var queue = new TickTaskQueue();
+                        queue.addTask(20,()->{
+                            player.sendSystemMessage(Component.nullToEmpty("§a已发送请求"));
+                        });
+                        queue.addTask(40,()->{
+                            player.sendSystemMessage(Component.nullToEmpty("§a对方已接受请求"));
+                            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 1000,4));
+                            preRavenn.tryPregnant();
+                            if (player.getName().getString().equalsIgnoreCase("Crystal_Neko")){
+                                preRavenn.setChildrenType(ToNekoEntities.CRYSTAL_NEKO);
+                            }else {
+                                preRavenn.setChildrenType(JREntities.SEEEEEX_NEKO);
+                            }
+                            ((org.cneko.justarod.entity.Pregnant) player).setChildrenType(ravenn.getType());
+                            ((org.cneko.justarod.entity.Pregnant) player).tryPregnant();
+
+                        });
+                        queue.addTask(60,()->{
+                            player.sendSystemMessage(Component.nullToEmpty("§a双方已怀孕！"));
+                        });
+                        TickTasks.add(queue);
+                    }else {
+                        player.sendSystemMessage(Component.nullToEmpty("§c已尝试交配，但无法怀孕"));
+                    }
+                }
+            }catch (Exception ignored){}
+        });
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WIW",
+    "WIW",
+    "  W"
+  ],
+  "key": {
+    "W": "minecraft:iron_ingot",
+    "I": "minecraft:glass"
+  },
+  "result": {
+    "id": "justarod:xp_gun",
+    "count": 1
+  }
+}

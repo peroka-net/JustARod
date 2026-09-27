@@ -1,0 +1,39 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.cneko.justarod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CommonChatEventMixin",
+    "DefaultAttributeRegistryMixin",
+    "EntityMixin",
+    "ItemStackMixin",
+    "LivingEntityMixin",
+    "NekoEntityMixin",
+    "PlayerMixin",
+    "ProjectileMixin",
+    "RavennEntityMixin",
+    "WitherEntityMixin",
+    "ServerCommonNetworkingHandlerMixin",
+    "ServerPlayerMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "SlimeInteractMixin",
+    "SlimeMoveControlAccessor",
+    "SlimePassengerCullMixin",
+    "debug.ServerPlayerSyncAccessor",
+    "SlimeTrustAccessor",
+    "SlimeTrustMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "client.ClientPlayerEntityMixin",
+    "client.ClientPlayerInteractionManagerMixin",
+    "client.LivingEntityRendererScaleInvoker",
+    "client.PlayerRendererMixin",
+    "client.SlimePassengerRenderMixin",
+    "client.SoundManagerMixin"
+  ]
+}

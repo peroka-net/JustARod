@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "justarod:testosterone",
+    "justarod:aromatase"
+  ],
+  "result": {
+    "id": "justarod:estrogen",
+    "count": 1
+  }
+}

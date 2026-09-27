@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DCD",
+    "DRD",
+    "TET"
+  ],
+  "key": {
+    "T": "#c:ingots/titanium",
+    "R": "#justarod:lithium_ion_battery",
+    "E": "justarod:basic_electric_rod",
+    "C": "#justarod:advanced_circuit",
+    "D": "minecraft:diamond"
+  },
+  "result": {
+    "id": "justarod:advanced_electric_rod",
+    "count": 1
+  }
+}

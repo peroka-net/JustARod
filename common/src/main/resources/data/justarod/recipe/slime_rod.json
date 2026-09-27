@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "BEB",
+    "BBB"
+  ],
+  "key": {
+    "B": "minecraft:slime_ball",
+    "E": "minecraft:end_rod"
+  },
+  "result": {
+    "id": "justarod:slime_rod",
+    "count": 1
+  }
+}

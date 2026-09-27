@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "GLG"
+  ],
+  "key": {
+    "G": "justarod:golden_leaves",
+    "L": "minecraft:glass",
+    "C": "toneko:catnip"
+  },
+  "result": {
+    "id": "justarod:bremelanotide",
+    "count": 1
+  }
+}

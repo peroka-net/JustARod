@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " R ",
+    " E ",
+    " C "
+  ],
+  "key": {
+    "R": "#justarod:red_cell_battery",
+    "E": "justarod:redstone_rod",
+    "C": "#justarod:electronic_circuit"
+  },
+  "result": {
+    "id": "justarod:basic_electric_rod",
+    "count": 1
+  }
+}

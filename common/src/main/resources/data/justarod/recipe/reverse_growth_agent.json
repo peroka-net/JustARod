@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "GLG"
+  ],
+  "key": {
+    "G": "justarod:golden_leaves",
+    "L": "minecraft:glass",
+    "C": "minecraft:spider_eye"
+  },
+  "result": {
+    "id": "justarod:reverse_growth_agent",
+    "count": 1
+  }
+}
